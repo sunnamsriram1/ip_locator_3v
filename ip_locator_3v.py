@@ -8,14 +8,16 @@ except ImportError:
 
 import csv
 import os
+import time
 
-# fallback colors
+# Fallback colors
 class c:
-    ran = '\033[96m'  # Cyan
-    c = '\033[93m'    # Yellow
-    lr = '\033[91m'   # Red
-    lg = '\033[92m'   # Light Green
-    reset = '\033[0m'
+    ran = '\033[96m'    # Cyan
+    c = '\033[93m'      # Yellow
+    lr = '\033[91m'     # Red
+    lg = '\033[92m'     # Light Green
+    boldg = '\033[1;92m'  # Bold Green
+    reset = '\033[0m'   # Reset
 
 def banner():
     print(c.lg + "\n╔═[ IP INFO LOCATOR TOOL ]" + c.reset)
@@ -64,38 +66,45 @@ def save_to_csv(ip, location, google_maps_link):
 
 def program():
     try:
-        ip = input(c.ran + "🔍 Enter target IP: " + c.reset)
+        ip = input(c.ran + "🔍 Enter target IP: " + c.reset).strip()
+        if ip == "":
+            print(c.lr + "❌ IP cannot be empty." + c.reset)
+            return
         location = ipapi.location(ip)
 
         print("\n📍 IP Details:\n")
-
         for k, v in location.items():
             label = k.replace("_", " ").title()
-
             if label.lower() in ["weight", "result"]:
-                print(f"{c.lg}✅ ➤ {label:<25}: {v}{c.reset}")  # Highlight special
+                print(f"{c.boldg}✅ ➤ {label:<25}: {v}{c.reset}")
             else:
-                print(f"{c.lg}➤ {label:<25}: {v}{c.reset}")     # Normal light green
+                print(f"{c.lg}➤ {label:<25}: {v}{c.reset}")
 
         google_maps_link = locat(location)
         save_to_csv(ip, location, google_maps_link)
 
+    except KeyboardInterrupt:
+        print(c.lr + "\n⛔ Interrupted by user (Ctrl+C). Returning to menu...\n" + c.reset)
     except Exception as e:
         print(c.lr + f"[Error] {str(e)}" + c.reset)
 
-# ─────────────────────────────
+# ──────────────── Main Loop ────────────────
 
 yes = ['y', 'yes']
 no = ['n', 'no']
 
 while True:
-    clear()
-    banner()
-    program()
-    cont = input(c.lg + "\n🔁 Do you want to continue? [y/n] " + c.reset).strip().lower()
-    if cont in no:
+    try:
         clear()
-        banner2()
-        print(c.lr + "\n🚪 Exiting the tool. Goodbye!\n" + c.reset)
+        banner()
+        program()
+        cont = input(c.lg + "\n🔁 Do you want to continue? [y/n] " + c.reset).strip().lower()
+        if cont in no:
+            clear()
+            banner2()
+            print(c.lr + "\n🚪 Exiting the tool. Goodbye!\n" + c.reset)
+            break
+    except KeyboardInterrupt:
+        print(c.lr + "\n🚪 Exit requested by user. Goodbye!\n" + c.reset)
         break
-      
+                    
